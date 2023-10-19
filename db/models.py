@@ -5,20 +5,94 @@ from django.contrib.gis.db import models
 from django.contrib.gis.geos import Polygon
 # from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 import uuid
+from django_unixdatetimefield import UnixDateTimeField
 
 
 class CurbArea(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    # city_id = models.ForeignKey(CityMaster, on_delete=models.CASCADE)
-    geometry = models.PolygonField()
-    # coordinates = models.CharField(max_length=2048)
-    # geometry = models.PolygonField(default = Polygon(((0, 0), (0, 1), (1, 1), (1, 0), (0, 0))))
+    geometry = models.PolygonField()    
     name = models.CharField(max_length=255, unique=True, null=False)
-    published_date = models.DateTimeField()
-    last_updated_date = models.DateTimeField()
+    published_date = UnixDateTimeField()
+    last_updated_date = UnixDateTimeField()   
     is_active = models.BooleanField(default=False)
     class Meta:
         db_table = 'area'
+
+
+class Policy(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    priority = models.IntegerField()
+    data_source_operator_id = JSONField(null=True, blank=True)
+    created_date = UnixDateTimeField()
+    updated_date = UnixDateTimeField()
+    is_active = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'policy'
+
+class PolicyRule(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    policy_id = models.ForeignKey(Policy, on_delete=models.CASCADE)   
+    activity = models.CharField(max_length=255)
+    max_stay = models.IntegerField(null=True, blank=True)
+    max_stay_unit = models.CharField(max_length=255, default='minute')
+    no_return = models.IntegerField(default=0)
+    no_return_unit = models.CharField(max_length=255, default='minute')
+    user_classes = JSONField(null=True, blank=True)
+    # created_datetime = models.DateTimeField()
+    # created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_policy_rule')
+    # updated_datetime = models.DateTimeField()
+    # updated_by =  models.ForeignKey(User, on_delete=models.CASCADE, related_name='updated_policy_rule')
+    is_active = models.BooleanField(default=False)
+    class Meta:
+        db_table = 'policy_rule'
+
+class PolicyTimespan(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    # city_id = models.ForeignKey(CityMaster, on_delete=models.CASCADE)
+    policy_id = models.ForeignKey(Policy, on_delete=models.CASCADE)   
+    start_date = UnixDateTimeField()
+    end_date = UnixDateTimeField()
+    day_of_week  = JSONField(null=True, blank=True)
+    day_of_month  = JSONField(null=True, blank=True)
+    months  = JSONField(null=True, blank=True)
+    time_of_day_start =  models.DurationField()
+    time_of_day_end =  models.DurationField()
+    # time_of_day_start =  models.CharField(max_length=2, null=True, blank=True)
+    # time_of_day_end =  models.CharField(max_length=2, null=True, blank=True)
+    designated_period_except =  models.CharField(max_length=2, null=True, blank=True)
+    designated_period =  models.CharField(max_length=2, null=True, blank=True)
+    # created_datetime = models.DateTimeField()
+    # created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_policy_timespan')
+    # updated_datetime = UnixDateTimeField()
+    # updated_by =  models.ForeignKey(User, on_delete=models.CASCADE, related_name='updated_policy_timespan')
+    is_active = models.BooleanField(default=False)
+    street_side = models.CharField(max_length=2, null=True, blank=True)
+
+    class Meta:
+        db_table = 'policy_timespan'
+
+
+
+
+class PolicyRate(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    # city_id = models.ForeignKey(CityMaster, on_delete=models.CASCADE)
+    policy_rule_id = models.ForeignKey(PolicyRule, on_delete=models.CASCADE)   
+    rate =  models.IntegerField(null=True, blank=True)
+    rate_unit =  models.CharField(max_length=255)
+    rate_unit_period =  models.CharField(max_length=255)
+    increment_duration =  models.IntegerField(null=True, blank=True)
+    increment_amount =  models.IntegerField(null=True, blank=True)
+    start_duration =  models.IntegerField(null=True, blank=True)
+    end_duration =  models.IntegerField(null=True, blank=True)
+    created_datetime = models.DateTimeField()
+    # created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_policy_rate')
+    updated_datetime = models.DateTimeField()
+    # updated_by =  models.ForeignKey(User, on_delete=models.CASCADE, related_name='updated_policy_rate')
+    is_active = models.BooleanField(default=False)
+    class Meta:
+        db_table = 'policy_rule_rate'
 
 
 # class CurbZone(models.Model):

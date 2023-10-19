@@ -82,7 +82,7 @@ DATABASES = {
     # }
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'db_test',
+        'NAME': 'db_testing',
         'USER': 'postgres',
         'PASSWORD': 'welcome@123',
         'HOST': 'localhost',
